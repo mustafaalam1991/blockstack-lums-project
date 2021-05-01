@@ -1,0 +1,50 @@
+### Deploy the Hub with Docker, nginx
+
+First have `docker`,`nginx` and `certbot` installed on a server with a FQDN pointed to it. The following guides should help you get this setup.
+
+- [Install `node.js`](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-20-04)
+- [Install `npm nvm node.js`](https://linuxize.com/post/how-to-install-node-js-on-ubuntu-20-04/)
+- [Install `nginx`](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-16-04)
+- [Install `docker`](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04)
+- [Install `certbot`](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04) (do not run the setup yet!)
+
+Then do the following:
+
+- Make a folder `$HOME/hub` and copy the configuration file `config.sample.json` to `$HOME/hub/config.json` and add in your desired configuration.
+- Copy `nginx.conf.sample` to `$HOME/hub/nginx.conf` and replace `hub.example.com` with your FQDN.
+- `sudo rm /etc/nginx/sites-enabled/default && sudo ln $HOME/hub/nginx.conf /etc/nginx/sites-enabled/default`
+- Finish `certbot` setup and cert generation
+- Pull the docker image and start an instance of the container:
+
+```bash
+$ docker pull quay.io/blockstack/gaia-hub:latest
+$ docker run -d --restart=always -v $HOME/hub/config.json:/src/hub/config.json -p 3000:3000 -e CONFIG_PATH=/src/hub/config.json quay.io/blockstack/gaia-hub:latest
+# Now you can test the hub! The exact output will depend on your configuration
+$ curl https://hub.example.com/hub_info | jq
+{
+  "challenge_text": "[\"gaiahub\",\"2017-09-19\",\"{{ .serverName }}\",\"blockstack_storage_please_sign\"]",
+  "read_url_prefix": "https://{{ .bucketName }}.{{ .storageProviderUrl }}/"
+}
+
+
+### How to install the command line
+You must have Node.js v12 or higher (v14 recommended). macOS and Linux users can avoid sudo or permissions problems or by using nvm. These instructions assume you are using a macOS or Linux system. To install the command line, do the following:
+$ npm install -g @stacks/cli
+
+### Check Versions used: 
+ubuntu@lumstx:~$ node -v
+V14.16.1
+ubuntu@lumstx:~$ npm -v
+6.14.12
+ubuntu@lumstx:~$ nvm -v
+0.38.0
+
+### Additionally:
+$ npm install -g typescript
+/home/ubuntu/.nvm/versions/node/v14.16.1/bin/tsc -> /home/ubuntu/.nvm/versions/node/v14.16.1/lib/node_modules/typescript/bin/tsc
+/home/ubuntu/.nvm/versions/node/v14.16.1/bin/tsserver -> /home/ubuntu/.nvm/versions/node/v14.16.1/lib/node_modules/typescript/bin/tsserver
++ typescript@4.2.4
+added 1 package from 1 contributor in 2.028s
+
+$ npm link typescript
+/home/ubuntu/node_modules/typescript -> /home/ubuntu/.nvm/versions/node/v14.16.1/lib/node_modules/typescript
